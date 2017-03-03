@@ -190,7 +190,9 @@ var resetStones = function(){
 var resetMonsters = function(){
   monsters = [];
   for(var i = 0; i < numMonsters; i++){
-    	monsters[i] = {};
+    	monsters[i] = {
+    		speed: 128 // movement in pixels per second
+    	};
     };
 }
 
@@ -288,13 +290,76 @@ var updateHeroPosition = function (modifier) {
   }
 }
 
+var updateMonsterPosition = function (monster,modifier) {
+  var monsterAux = {
+    x: monster.x,
+    y: monster.y
+  };
+
+  // Player holding down - Monster going up
+  if (40 in keysDown) {
+    monsterAux.y = monster.y - (monster.speed * modifier);
+    if (!areThereStones(monsterAux)){
+      // Is the hero in the trees?
+      if (monsterAux.y <= minTop){
+        monster.y = minTop;
+      } else {
+        monster.y = monsterAux.y;
+      }
+    }
+  }
+  // Player holding up - Monster going down
+  if (38 in keysDown) {
+    monsterAux.y = monster.y + (monster.speed * modifier);
+    //Is there a stone?
+    if (!areThereStones(monsterAux)){
+      // Is the hero in the trees?
+      if (monsterAux.y >= maxBottom) {
+        monster.y = maxBottom;
+      } else {
+        monster.y = monster.y;
+      }
+    }
+  }
+
+  // Player holding left
+  if (37 in keysDown) {
+    monsterAux.x = monster.x - (monster.speed * modifier);
+    //Is there a stone?
+    if (!areThereStones(monsterAux)){
+      // Is the hero in the trees?
+      if (monsterAux.x <= minLeft){
+        monster.x = minLeft; //48
+      } else {
+        monster.x = monsterAux.x;
+      }
+    }
+  }
+
+  // Player holding right
+  if (39 in keysDown) {
+    monsterAux.x = monster.x + (monster.speed * modifier);
+    //Is there a stone?
+    if (!areThereStones(monsterAux)){
+      // Is the hero in the trees?
+      if (monsterAux.x >= maxRight){
+        monster.x = maxRight; //448
+      } else {
+        monster.x = monsterAux.x;
+      }
+    }
+  }
+};
+
 var update = function (modifier) {
   updateHeroPosition(modifier);
-
+  for (var i = 0; i < numMonsters; i++){
+    updateMonsterPosition(monsters[i],modifier);
+  }
 	// Was the princess caught?
 	if (areTheyTouching(hero,princess)) {
 		++princessesCaught;
-    if (princessesCaught == 3*level){
+    if (princessesCaught == 10*level){
       numStones += 1;
       numMonsters += 1;
       level += 1;
@@ -307,6 +372,9 @@ var update = function (modifier) {
   			lifes -= 1;
   			if (lifes == 0) { //Game Over
   				princessesCaught = 0;
+          level = 1;
+          numStones = 2;
+          numMonsters = 1;
   			}
   			reset();
   		}
