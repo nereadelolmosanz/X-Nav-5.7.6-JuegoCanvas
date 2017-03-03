@@ -1,0 +1,25 @@
+
+body {
+  color: #0B3B17;
+  text-align: center;
+}
+
+#leyend {
+  background-color: #CEF6CE;
+  border-radius: 20px;
+  margin: auto;
+  border: 0.5px solid black;
+  width: 500px;
+  height: 120px;
+}
+
+.zoom:hover {
+	transform : scale(1.1);
+	-moz-transform : scale(1.1); /* Firefox */
+	-webkit-transform : scale(1.1); /* Chrome - Safari */
+  margin: auto;
+}
+
+footer {
+  font-size: 0.75em;
+}
