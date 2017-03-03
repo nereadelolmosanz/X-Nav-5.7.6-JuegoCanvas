@@ -78,16 +78,19 @@ var level = 1;
 // Handle keyboard controls
 var keysDown = {};
 
-newGame.onclick = function (){
+var resetGame = function (){
   princessesCaught = 0;
 	numStones = 2;
   numMonsters = 1;
   lifes = 3;
   level = 1;
-	//localStorage.setItem("princessesCaught", princessesCaught);
-	main();
 };
 
+newGame.onclick = function (){
+  resetGame();
+  //localStorage.setItem("princessesCaught", princessesCaught);
+	main();
+};
 
 addEventListener("keydown", function (e) {
 	keysDown[e.keyCode] = true;
@@ -112,7 +115,6 @@ var areTheyTouching = function (obj1, obj2) {
 			 && obj1.y >= (obj2.y - 32)
 		   && obj1.y <= (obj2.y + 32));
 };
-
 
 var setObjRandomPosition = function (gameObject) {
     // Throw the object somewhere on the screen randomly
@@ -371,10 +373,7 @@ var update = function (modifier) {
   		if (areTheyTouching(hero,monsters[i])) {
   			lifes -= 1;
   			if (lifes == 0) { //Game Over
-  				princessesCaught = 0;
-          level = 1;
-          numStones = 2;
-          numMonsters = 1;
+  				resetGame();
   			}
   			reset();
   		}
@@ -419,11 +418,6 @@ var render = function () {
 	//ctx.fillText("Princesses caught: " + princessesCaught, 32, 32);
 	//ctx.fillText("Lifes: " + lifes, 300, 32);
   //ctx.fillText("Level: " + level, 400, 32);
-	if (lifes == 0){
-		//ctx.fillText("Game over", 200 , 200);
-		lifes = 3;
-		reset();
-	}
 };
 
 // The main game loop
