@@ -3,6 +3,10 @@
 // Slight modifications by Gregorio Robles <grex@gsyc.urjc.es>
 // to meet the criteria of a canvas class for DAT @ Univ. Rey Juan Carlos
 
+
+var leyend = document.getElementById("leyend");
+var newGame = document.getElementById("restart");
+
 // Create the canvas
 var canvas = document.createElement("canvas");
 var ctx = canvas.getContext("2d");
@@ -57,7 +61,7 @@ var hero = {
 var princess = {};
 var princessesCaught = 0;
 var stones = [];
-var numStones = 1;
+var numStones = 2;
 for(var i = 0; i < numStones; i++){
 	stones[i] = {};
 };
@@ -73,6 +77,17 @@ var level = 1;
 
 // Handle keyboard controls
 var keysDown = {};
+
+newGame.onclick = function (){
+  princessesCaught = 0;
+	numStones = 2;
+  numMonsters = 1;
+  lifes = 3;
+  level = 1;
+	//localStorage.setItem("princessesCaught", princessesCaught);
+	main();
+};
+
 
 addEventListener("keydown", function (e) {
 	keysDown[e.keyCode] = true;
@@ -90,21 +105,6 @@ var minLeft = 32; // 32 = 0 + 32(tree)
 var maxRight = (canvas.width - 64); // 480 = 512 - 32(tree) - 32(hero)
 
 
-var setObjRandomPosition = function (gameObject) {
-    // Throw the object somewhere on the screen randomly
-    // una objeto ocupa 32 pixels.
-    var overlap = true;
-    while (overlap){
-        gameObject.x = 32 + (Math.random() * (maxRight - 32));
-        gameObject.y = 32 + (Math.random() * (maxBottom - 32));
-        if (!areTheyTouching(gameObject,hero)) {
-            overlap = false;
-        }
-    }
-};
-
-
-
 // Checks if two objects are touching each other
 var areTheyTouching = function (obj1, obj2) {
   return (obj1.x >= (obj2.x - 32)
@@ -114,59 +114,85 @@ var areTheyTouching = function (obj1, obj2) {
 };
 
 
+var setObjRandomPosition = function (gameObject) {
+    // Throw the object somewhere on the screen randomly
+    // una objeto ocupa 32 pixels.
+    var overlap = true;
+    while (overlap){
+      gameObject.x = 32 + (Math.random() * (maxRight - 32));
+      gameObject.y = 32 + (Math.random() * (maxBottom - 32));
+      if (!areTheyTouching(gameObject,hero)) {
+        overlap = false;
+      }
+    }
+};
+
 var avoidOverlaping = function () {
 	var overlap = true;
-    while (overlap) {
-		//Overlap between Princess and Stones
-        while (overlap){
-            overlap = false;
-            for (var i = 0; i < numStones; i++){
-                if(areTheyTouching(princess,stones[i])){
-                    overlap = true;
-                    setObjRandomPosition(stones[i]);
-                }
-				//Overlap between Stones
-				for (var j = 0; j < numStones; j++){
-					if(i == j){
-						continue
-					}else if (areTheyTouching(stones[i],stones[j])){
-                    	overlap = true;
-                        setObjRandomPosition(stones[j]);
-                    }
-                }
-            }
+  while (overlap) {
+	  //Overlap between Princess and Stones
+    while (overlap){
+      overlap = false;
+      for (var i = 0; i < numStones; i++){
+        if(areTheyTouching(princess,stones[i])){
+          overlap = true;
+          setObjRandomPosition(stones[i]);
+        }
+    		//Overlap between Stones
+    		for (var j = 0; j < numStones; j++){
+    			if(i == j){
+    				continue
+    			}else if (areTheyTouching(stones[i],stones[j])){
+          	overlap = true;
+            setObjRandomPosition(stones[j]);
+          }
+        }
+      }
+    }
+
+    //Overlap between Princess and Monsters
+    overlap = true;
+    while (overlap){
+      overlap = false;
+      for (var i = 0; i < numMonsters; i++){
+        if(areTheyTouching(princess,monsters[i])){
+          overlap = true;
+          setObjRandomPosition(monsters[i]);
         }
 
-
-		    //Overlap between Princess and Monsters
-        overlap = true;
-        while (overlap){
-            overlap = false;
-            for (var i = 0; i < numMonsters; i++){
-                if(areTheyTouching(princess,monsters[i])){
-                    overlap = true;
-                    setObjRandomPosition(monsters[i]);
-                }
-				for (var j = 0; j < numStones; j++){
-		            if (areTheyTouching(stones[j],monsters[i])){
-		                overlap = true;
-		                setObjRandomPosition(monsters[i]);
-		            }
-				}
-				//Overlap between monsters
-				for (var k = 0; k < numMonsters; k++){
+  	    for (var j = 0; j < numStones; j++){
+          if (areTheyTouching(stones[j],monsters[i])){
+            overlap = true;
+            setObjRandomPosition(monsters[i]);
+          }
+  	    }
+		    //Overlap between monsters
+		    for (var k = 0; k < numMonsters; k++){
 					if(i == k){
 						continue
 					}else if (areTheyTouching(monsters[i],monsters[k])){
-                        overlap = true;
-                        setObjRandomPosition(monsters[i]);
-                    }
-                }
-            }
+            overlap = true;
+            setObjRandomPosition(monsters[i]);
+          }
         }
+      }
     }
+  }
 }
 
+var resetStones = function(){
+  stones = [];
+  for(var i = 0; i < numStones; i++){
+    	stones[i] = {};
+    };
+}
+
+var resetMonsters = function(){
+  monsters = [];
+  for(var i = 0; i < numMonsters; i++){
+    	monsters[i] = {};
+    };
+}
 
 // Reset the game when the player catches a princess
 var reset = function () {
@@ -176,18 +202,19 @@ var reset = function () {
   // Throw the princess somewhere on the screen randomly
   setObjRandomPosition(princess);
 
+  resetStones();
   // Throw the stones somewhere on the screen randomly
   for(var i = 0; i < numStones; i++){
       setObjRandomPosition(stones[i]);
   }
 
   // Throw the monsters somewhere on the screen randomly
+  resetMonsters();
   for(var i = 0; i < numMonsters; i++){
       setObjRandomPosition(monsters[i]);
   }
   avoidOverlaping()
 };
-
 
 var areThereStones = function (gameObj){
   var stone = false;
@@ -199,72 +226,75 @@ var areThereStones = function (gameObj){
   return stone;
 };
 
-
-// Update game objects
-var update = function (modifier) {
-	var heroAux = {
+// Update hero position
+var updateHeroPosition = function (modifier) {
+  var heroAux = {
     x: hero.x,
     y: hero.y
   };
 
   // Player holding up
-	if (38 in keysDown) {
-		heroAux.y = hero.y - (hero.speed * modifier);
-		if (!areThereStones(heroAux)){
+  if (38 in keysDown) {
+    heroAux.y = hero.y - (hero.speed * modifier);
+    if (!areThereStones(heroAux)){
       // Is the hero in the trees?
       if (heroAux.y <= minTop){
-  		  hero.y = minTop;
-  		} else {
-		    hero.y = heroAux.y;
-      }
-		}
-	}
-  // Player holding down
-	if (40 in keysDown) {
-		heroAux.y = hero.y + (hero.speed * modifier);
-		//Is there a stone?
-		if (!areThereStones(heroAux)){
-      // Is the hero in the trees?
-  		if (heroAux.y >= maxBottom) {
-  		  hero.y = maxBottom;
-			} else {
-		    hero.y = heroAux.y;
+        hero.y = minTop;
+      } else {
+        hero.y = heroAux.y;
       }
     }
-	}
+  }
+  // Player holding down
+  if (40 in keysDown) {
+    heroAux.y = hero.y + (hero.speed * modifier);
+    //Is there a stone?
+    if (!areThereStones(heroAux)){
+      // Is the hero in the trees?
+      if (heroAux.y >= maxBottom) {
+        hero.y = maxBottom;
+      } else {
+        hero.y = heroAux.y;
+      }
+    }
+  }
 
   // Player holding left
-	if (37 in keysDown) {
-		heroAux.x = hero.x - (hero.speed * modifier);
+  if (37 in keysDown) {
+    heroAux.x = hero.x - (hero.speed * modifier);
     //Is there a stone?
-		if (!areThereStones(heroAux)){
-    	// Is the hero in the trees?
-  		if (heroAux.x <= minLeft){
-  			hero.x = minLeft; //48
-  		} else {
-			  hero.x = heroAux.x;
-      }
-		}
-	}
-
-  // Player holding right
-	if (39 in keysDown) {
-		heroAux.x = hero.x + (hero.speed * modifier);
-    //Is there a stone?
-		if (!areThereStones(heroAux)){
-    	// Is the hero in the trees?
-  		if (heroAux.x >= maxRight){
-  		  hero.x = maxRight; //448
-  		} else {
+    if (!areThereStones(heroAux)){
+      // Is the hero in the trees?
+      if (heroAux.x <= minLeft){
+        hero.x = minLeft; //48
+      } else {
         hero.x = heroAux.x;
       }
-		}
-	}
+    }
+  }
+
+  // Player holding right
+  if (39 in keysDown) {
+    heroAux.x = hero.x + (hero.speed * modifier);
+    //Is there a stone?
+    if (!areThereStones(heroAux)){
+      // Is the hero in the trees?
+      if (heroAux.x >= maxRight){
+        hero.x = maxRight; //448
+      } else {
+        hero.x = heroAux.x;
+      }
+    }
+  }
+}
+
+var update = function (modifier) {
+  updateHeroPosition(modifier);
 
 	// Was the princess caught?
 	if (areTheyTouching(hero,princess)) {
 		++princessesCaught;
-    if (princessesCaught == 2*level){
+    if (princessesCaught == 3*level){
       numStones += 1;
       numMonsters += 1;
       level += 1;
@@ -315,8 +345,12 @@ var render = function () {
 	ctx.font = "24px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
-	ctx.fillText("Princesses caught: " + princessesCaught, 32, 32);
-	ctx.fillText("Lifes: " + lifes, 350, 32);
+  leyend.innerHTML = "<p>Princesses caught: " + princessesCaught;
+  leyend.innerHTML += "</p><p>\nLifes: " + lifes;
+  leyend.innerHTML += "</p><p>\nLevel: " + level + "</p>";
+	//ctx.fillText("Princesses caught: " + princessesCaught, 32, 32);
+	//ctx.fillText("Lifes: " + lifes, 300, 32);
+  //ctx.fillText("Level: " + level, 400, 32);
 	if (lifes == 0){
 		//ctx.fillText("Game over", 200 , 200);
 		lifes = 3;
